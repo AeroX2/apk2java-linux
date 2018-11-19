@@ -95,15 +95,23 @@ class APK2Java:
     def _dex2jar(self):
         self._print_header("Convert 'apk' to 'jar'")
         if self.apk_file != '':
-            self._call([os.path.join(self.tool, 'dex2jar-2.0/d2j-dex2jar.sh'), '-f', '-o', self.out + '.jar', self.apk_file])
+            self._call(['mkdir', 'temp'])
+            self._call(['unzip', '-o', self.apk_file, '-d', 'temp'])
+            import glob
+            for dex_file in glob.glob('./temp/*.dex'):
+                dex_file_name = os.path.basename(dex_file)
+                self._call([os.path.join(self.tool, 'dex2jar-2.0/d2j-dex2jar.sh'), '-f', '-o', self.out + dex_file_name + '.jar', dex_file])
+            self._call(['rm', '-r', 'temp'])
             print('Done')
 
 
     def _cfr(self):
         self._print_header('Decompiling class files')
         if self.apk_file != '':
-            self._call(['java', '-jar', os.path.join(self.tool, 'cfr_0_123.jar'), self.out + '.jar',
-                  '--outputdir', os.path.join(self.out, 'src/')])
+            import glob
+            for jar_file in glob.glob('./*.jar'):
+                self._call(['java', '-jar', os.path.join(self.tool, 'cfr_0_123.jar'), jar_file,
+                      '--outputdir', os.path.join(self.out, 'src/')])
             print('Done')
 
 
